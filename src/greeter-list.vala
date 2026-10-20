@@ -787,7 +787,7 @@ public abstract class GreeterList : FadableBox
     /* Not all subclasses are going to be interested in talking to lightdm, but for those that are, make it easy. */
 
     protected bool will_clear = false;
-    protected bool prompted = false;
+    protected bool auth_interaction_seen = false;
     protected bool unacknowledged_messages = false;
 
     protected void connect_to_lightdm ()
@@ -799,7 +799,11 @@ public abstract class GreeterList : FadableBox
 
     protected void show_message_cb (string text, LightDM.MessageType type)
     {
-        unacknowledged_messages = true;
+        if (type == LightDM.MessageType.ERROR)
+            unacknowledged_messages = true;
+        else
+            auth_interaction_seen = true;
+
         show_message (text, type == LightDM.MessageType.ERROR);
     }
 
@@ -814,7 +818,7 @@ public abstract class GreeterList : FadableBox
                 manual_name = SlickGreeter.singleton.authentication_user();
         }
 
-        prompted = true;
+        auth_interaction_seen = true;
         if (text == "Password: ")
             text = _("Password:");
         if (text == "login:")
@@ -867,13 +871,13 @@ public abstract class GreeterList : FadableBox
             }
             else
             {
-                prompted = true;
+                auth_interaction_seen = true;
                 show_authenticated ();
             }
         }
         else
         {
-            if (prompted)
+            if (auth_interaction_seen)
             {
                 /* Show an error if one wasn't provided */
                 if (will_clear)
@@ -898,7 +902,7 @@ public abstract class GreeterList : FadableBox
 
     protected virtual void start_authentication ()
     {
-        prompted = false;
+        auth_interaction_seen = false;
         unacknowledged_messages = false;
 
         /* Reset manual username */
