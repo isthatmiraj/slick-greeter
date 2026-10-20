@@ -848,8 +848,11 @@ public abstract class GreeterList : FadableBox
 
         if (is_authenticated)
         {
-            /* Login immediately if prompted and user has acknowledged all messages */
-            if (prompted && !unacknowledged_messages)
+            /* Successful authentication should not wait for informational messages to be acknowledged. */
+            unacknowledged_messages = false;
+
+            /* Login immediately after successful authentication. */
+            if (!unacknowledged_messages)
             {
                 login_complete ();
                 if (SlickGreeter.singleton.test_mode)
